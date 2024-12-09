@@ -1,0 +1,14 @@
+{
+    "name": "simple-app",
+    "version": "1.0.0",
+    "description": "Node project",
+    "main": "server.js",
+    "scripts": {
+      "start": "node server.js",
+      "build": "echo 'No build step defined'"
+    },
+    "dependencies": {
+      "express": "^4.17.1"
+    }
+  }
+  

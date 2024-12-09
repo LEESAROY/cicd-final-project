@@ -31,6 +31,7 @@ jobs:
           echo "Fetching EC2 public IP..."
           EC2_PUBLIC_IP=$(aws cloudformation describe-stacks --stack-name leesa9019432-ec2-instance-stack --query "Stacks[0].Outputs[?OutputKey=='PublicIP'].OutputValue" --output text)
           echo "EC2_PUBLIC_IP=${EC2_PUBLIC_IP}" >> $GITHUB_ENV
+          echo "Fetched EC2 Public IP: ${EC2_PUBLIC_IP}"
 
   deploy-api:
     needs: deploy-ec2
@@ -46,6 +47,9 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: 'us-east-1'
+
+      - name: Verify EC2 Public IP
+        run: echo "Using EC2 Public IP: ${{ env.EC2_PUBLIC_IP }}"
 
       - name: Deploy API Gateway
         run: |
