@@ -1,0 +1,24 @@
+Resources:
+  leesa9019432InstanceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'ec2.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'leesa9019432InstancePolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action: 's3:*'
+                Resource: '*'
+
+Outputs:
+  InstanceRole:
+    Value: !GetAtt leesa9019432InstanceRole.Arn
+    Description: ARN of the instance role

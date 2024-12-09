@@ -1,0 +1,80 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  deploy-ec2:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: 'us-east-1'
+
+      - name: Deploy EC2 Instance
+        run: |
+          aws cloudformation deploy --template-file ./ec2-instance.yaml --stack-name leesa9019432-ec2-instance-stack --capabilities CAPABILITY_NAMED_IAM
+
+      - name: Get EC2 Public IP
+        id: ec2-info
+        run: |
+          echo "Fetching EC2 public IP..."
+          EC2_PUBLIC_IP=$(aws cloudformation describe-stacks --stack-name leesa9019432-ec2-instance-stack --query "Stacks[0].Outputs[?OutputKey=='PublicIP'].OutputValue" --output text)
+          echo "::set-output name=ec2_public_ip::$EC2_PUBLIC_IP"
+
+  deploy-api:
+    needs: deploy-ec2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: 'us-east-1'
+
+      - name: Deploy API Gateway
+        run: |
+          aws cloudformation deploy --template-file ./api-gateway.yaml --stack-name leesa9019432-api-gateway-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides EC2InstancePublicIP=${{ needs.deploy-ec2.outputs.ec2_public_ip }}
+
+  deploy-s3:
+    needs: [deploy-ec2, deploy-api]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build application
+        run: npm run build
+
+      - name: Deploy S3 Bucket
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: 'us-east-1'
+        run: |
+          aws cloudformation deploy --template-file ./s3-bucket.yaml --stack-name leesa9019432-s3-bucket-stack --capabilities CAPABILITY_NAMED_IAM
+          aws s3 sync ./build s3://leesa9019432-frontend-bucket

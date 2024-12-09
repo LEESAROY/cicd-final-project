@@ -1,0 +1,13 @@
+Resources:
+  leesa9019432FrontendBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: leesa9019432-frontend-bucket
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+
+Outputs:
+  WebsiteURL:
+    Value: !GetAtt leesa9019432FrontendBucket.WebsiteURL
+    Description: URL for website hosted on S3

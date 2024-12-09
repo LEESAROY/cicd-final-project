@@ -1,0 +1,40 @@
+Parameters:
+  EC2InstancePublicIP:
+    Type: String
+    Description: Public IP address of the EC2 instance
+
+Resources:
+  leesa9019432ApiGateway:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: 'leesa9019432Api'
+
+  leesa9019432ApiResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId:
+        Fn::GetAtt:
+          - 'leesa9019432ApiGateway'
+          - 'RootResourceId'
+      PathPart: '{proxy+}'
+      RestApiId:
+        Ref: 'leesa9019432ApiGateway'
+
+  leesa9019432ApiMethod:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'POST'
+      ResourceId:
+        Ref: 'leesa9019432ApiResource'
+      RestApiId:
+        Ref: 'leesa9019432ApiGateway'
+      Integration:
+        IntegrationHttpMethod: 'POST'
+        Type: 'HTTP_PROXY'
+        Uri: !Sub 'http://${EC2InstancePublicIP}:80/'
+
+Outputs:
+  ApiEndpoint:
+    Value: !Sub 'https://${leesa9019432ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/'
+    Description: URL of the API Gateway endpoint
