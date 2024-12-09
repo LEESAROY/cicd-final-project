@@ -17,6 +17,8 @@ Resources:
           - 'leesa9019432ApiGateway'
           - 'RootResourceId'
       PathPart: 'api'
+      RestApiId:
+        Ref: 'leesa9019432ApiGateway'
 
   leesa9019432ApiDataResource:
     Type: 'AWS::ApiGateway::Resource'
