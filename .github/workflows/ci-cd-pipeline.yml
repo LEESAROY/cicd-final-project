@@ -10,6 +10,9 @@ jobs:
   deploy-ec2:
     runs-on: ubuntu-latest
 
+    outputs:
+      ec2_public_ip: ${{ steps.get-ip.outputs.ec2_public_ip }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -26,13 +29,12 @@ jobs:
           aws cloudformation deploy --template-file ./ec2-instance.yaml --stack-name leesa9019432-ec2-instance-stack --capabilities CAPABILITY_NAMED_IAM
 
       - name: Get EC2 Public IP
-        id: ec2-info
+        id: get-ip
         run: |
           echo "Fetching EC2 public IP..."
           EC2_PUBLIC_IP=$(aws cloudformation describe-stacks --stack-name leesa9019432-ec2-instance-stack --query "Stacks[0].Outputs[?OutputKey=='PublicIP'].OutputValue" --output text)
-          echo "Fetched EC2 Public IP: ${EC2_PUBLIC_IP}"
-          echo "EC2_PUBLIC_IP=${EC2_PUBLIC_IP}" >> $GITHUB_ENV
-          echo "export EC2_PUBLIC_IP=${EC2_PUBLIC_IP}" >> $GITHUB_ENV
+          echo "EC2_PUBLIC_IP=${EC2_PUBLIC_IP}"
+          echo "::set-output name=ec2_public_ip::${EC2_PUBLIC_IP}"
 
   deploy-api:
     needs: deploy-ec2
@@ -51,6 +53,7 @@ jobs:
 
       - name: Deploy API Gateway
         run: |
+          EC2_PUBLIC_IP="${{ needs.deploy-ec2.outputs.ec2_public_ip }}"
           echo "Using EC2 Public IP: ${EC2_PUBLIC_IP}"
           aws cloudformation deploy --template-file ./api-gateway.yaml --stack-name leesa9019432-api-gateway-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides EC2InstancePublicIP=${EC2_PUBLIC_IP}
 
