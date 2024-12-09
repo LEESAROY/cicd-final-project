@@ -39,7 +39,7 @@ jobs:
             --template-file s3-bucket.yaml \
             --stack-name s3-bucket-stack \
             --capabilities CAPABILITY_NAMED_IAM
-            --region $AWS_REGION
+            --region us-east-1
 
   deploy-iam-roles:
     runs-on: ubuntu-latest
