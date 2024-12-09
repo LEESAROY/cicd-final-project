@@ -84,7 +84,7 @@ jobs:
         run: |
           aws cloudformation deploy --template-file ./s3-bucket.yaml --stack-name leesa9019432-s3-bucket-stack --capabilities CAPABILITY_NAMED_IAM || true
           aws cloudformation describe-stack-events --stack-name leesa9019432-s3-bucket-stack
-          aws s3 sync ./public s3://leesa9019432-frontend-bucket-9121718
+          aws s3 sync ./public s3://leesa9019432-frontend-bucket-9121802
 
       - name: Describe Stack Events on Failure
         if: failure()
