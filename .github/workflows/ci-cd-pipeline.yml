@@ -82,6 +82,10 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: 'us-east-1'
         run: |
-          aws cloudformation deploy --template-file ./s3-bucket.yaml --stack-name leesa9019432-s3-bucket-stack --capabilities CAPABILITY_NAMED_IAM
+          aws cloudformation deploy --template-file ./s3-bucket.yaml --stack-name leesa9019432-s3-bucket-stack --capabilities CAPABILITY_NAMED_IAM || true
           aws cloudformation describe-stack-events --stack-name leesa9019432-s3-bucket-stack
-          aws s3 sync ./public s3://leesa9019432-frontend-bucket
+          aws s3 sync ./public s3://leesa9019432-frontend-bucket-9121718
+
+      - name: Describe Stack Events on Failure
+        if: failure()
+        run: aws cloudformation describe-stack-events --stack-name leesa9019432-s3-bucket-stack
