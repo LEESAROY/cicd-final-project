@@ -2,7 +2,7 @@ Resources:
   leesa9019432FrontendBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: leesa9019432-frontend-bucket
+      BucketName: leesa9019432-frontend-bucket-9121718
       AccessControl: PublicRead
       WebsiteConfiguration:
         IndexDocument: index.html
