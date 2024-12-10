@@ -21,6 +21,9 @@ Resources:
       Runtime: nodejs20.x
       MemorySize: 128
       Timeout: 5
+      Environment:
+        Variables:
+          AWS_REGION: ap-southeast-1 
 
 Outputs:
   MyLambdaFunctionArn:
