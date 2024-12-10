@@ -40,14 +40,8 @@ Resources:
         Ref: 'leesa9019432ApiGateway'
       Integration:
         IntegrationHttpMethod: 'GET'
-        Type: 'HTTP_PROXY'
+        Type: 'HTTP'
         Uri: !Sub 'http://${EC2InstancePublicIP}:80/api/data'
-        RequestParameters:
-          integration.request.path.proxy: "method.request.path.proxy"
-        IntegrationResponses:
-          - StatusCode: 200
-      MethodResponses:
-        - StatusCode: 200
 
 Outputs:
   ApiEndpoint:
