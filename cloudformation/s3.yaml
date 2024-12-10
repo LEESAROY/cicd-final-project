@@ -5,7 +5,7 @@ Resources:
   FrontendBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: frontend-bucket-${AWS::AccountId}-${AWS::Region}
+      BucketName: leesa9019432-frontend-bucket-91220241050
       WebsiteConfiguration:
         IndexDocument: index.html
 
