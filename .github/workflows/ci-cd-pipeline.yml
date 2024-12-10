@@ -31,8 +31,8 @@ jobs:
         run: ls -R
       - name: Install Dependencies
         run: npm install
-      - name: Compile Application
-        run: npm run build
+      - name: Configure AWS Region
+        run: aws configure set region us-east-1
       - name: Validate CloudFormation Templates
         run: |
           aws cloudformation validate-template --template-body file://cloudformation/s3.yaml
