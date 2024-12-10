@@ -25,11 +25,11 @@ jobs:
           node-version: '14'
 
       - name: Install Dependencies
-        working-directory: ./src
+        working-directory: src
         run: npm install
 
       - name: Compile Application
-        working-directory: ./src
+        working-directory: src
         run: npm run build
 
       - name: Validate CloudFormation Template
@@ -40,7 +40,7 @@ jobs:
     needs: build
     steps:
       - name: Run Unit Tests
-        working-directory: ./tests
+        working-directory: src
         run: npm test
 
   deploy:

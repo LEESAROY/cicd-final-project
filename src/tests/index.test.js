@@ -1,4 +1,4 @@
-const lambda = require('../src/index');
+const lambda = require('../index');
 
 describe('Lambda Function', () => {
     it('should return a 200 status code with correct message', async () => {
