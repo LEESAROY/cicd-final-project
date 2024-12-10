@@ -12,8 +12,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
-        with:
-          ref: ${{ github.ref }}
 
   build:
     runs-on: ubuntu-latest
@@ -30,8 +28,12 @@ jobs:
       - name: Compile Application
         run: npm run build
 
-      - name: Validate CloudFormation Template
-        run: aws cloudformation validate-template --template-body file://cloudformation/infrastructure.yaml
+      - name: Validate CloudFormation Templates
+        run: |
+          aws cloudformation validate-template --template-body file://cloudformation/s3.yaml
+          aws cloudformation validate-template --template-body file://cloudformation/iam.yaml
+          aws cloudformation validate-template --template-body file://cloudformation/lambda.yaml
+          aws cloudformation validate-template --template-body file://cloudformation/api-gateway.yaml
 
   test:
     runs-on: ubuntu-latest
@@ -46,8 +48,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-        with:
-          ref: ${{ github.ref }}
 
       - name: Set up AWS CLI
         uses: aws-actions/configure-aws-credentials@v1
@@ -56,14 +56,33 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: 'us-east-1'
 
-      - name: Deploy Infrastructure
+      - name: Deploy S3 Bucket
         run: |
           aws cloudformation deploy \
-            --template-file cloudformation/infrastructure.yaml \
-            --stack-name my-infrastructure-stack \
+            --template-file cloudformation/s3.yaml \
+            --stack-name frontend-s3-bucket
+
+      - name: Deploy IAM Role
+        run: |
+          aws cloudformation deploy \
+            --template-file cloudformation/iam.yaml \
+            --stack-name lambda-execution-role
+
+      - name: Deploy Lambda Function
+        run: |
+          aws cloudformation deploy \
+            --template-file cloudformation/lambda.yaml \
+            --stack-name backend-lambda \
             --capabilities CAPABILITY_NAMED_IAM \
-            --parameter-overrides LambdaS3Bucket=my-lambda-code-bucket
+            --parameter-overrides LambdaS3Bucket=my-lambda-code-bucket LambdaExecutionRoleArn=$(aws cloudformation describe-stacks --stack-name lambda-execution-role --query "Stacks[0].Outputs[?OutputKey=='LambdaExecutionRoleArn'].OutputValue" --output text)
+
+      - name: Deploy API Gateway
+        run: |
+          aws cloudformation deploy \
+            --template-file cloudformation/api-gateway.yaml \
+            --stack-name api-gateway \
+            --parameter-overrides MyLambdaFunctionArn=$(aws cloudformation describe-stacks --stack-name backend-lambda --query "Stacks[0].Outputs[?OutputKey=='MyLambdaFunctionArn'].OutputValue" --output text)
 
       - name: Sync S3 Bucket
         run: |
-          aws s3 sync public/ s3://leesa9019432-frontend-bucket-9121857 --region us-east-1
+          aws s3 sync public/ s3://frontend-bucket-${{ secrets.AWS_ACCOUNT_ID }}-${{ secrets.AWS_REGION }} --region ${{ secrets.AWS_REGION }}

@@ -1,0 +1,15 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: S3 bucket for hosting the frontend
+
+Resources:
+  FrontendBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: frontend-bucket-${AWS::AccountId}-${AWS::Region}
+      WebsiteConfiguration:
+        IndexDocument: index.html
+
+Outputs:
+  WebsiteURL:
+    Value: !GetAtt FrontendBucket.WebsiteURL
+    Description: URL for the website hosted on S3
