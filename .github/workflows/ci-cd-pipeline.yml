@@ -29,8 +29,6 @@ jobs:
           node-version: '14'
       - name: Install Dependencies
         run: npm install
-      - name: Create lambda.zip
-        run: zip -r lambda.zip index.js node_modules
       - name: List Files for Debugging
         run: ls -R
       - name: Configure AWS CLI
@@ -78,6 +76,8 @@ jobs:
             --template-file cloudformation/s3.yaml \
             --stack-name frontend-s3-bucket \
             --capabilities CAPABILITY_IAM
+      - name: Create lambda.zip
+        run: zip -r lambda.zip index.js node_modules
       - name: Upload lambda.zip to S3 
         env: 
           S3_BUCKET: leesa9019432-frontend-bucket-91220241050
