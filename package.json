@@ -2,9 +2,9 @@
   "name": "simple-app",
   "version": "1.0.0",
   "description": "Node project for CI/CD pipeline example",
-  "main": "src/index.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node index.js",
     "build": "echo 'No build step defined'",
     "test": "jest"
   },
