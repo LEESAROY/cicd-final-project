@@ -86,7 +86,8 @@ jobs:
       - name: Upload lambda.zip to S3 
         env: 
           S3_BUCKET: leesa9019432-frontend-bucket-91220241050
-        run: aws s3 cp lambda.zip s3://$S3_BUCKET/lambda.zip --region us-east-1
+        run: |
+          aws s3 cp /home/runner/work/$GITHUB_REPOSITORY/lambda.zip s3://$S3_BUCKET/lambda.zip --region us-east-1
       - name: Deploy IAM Role
         run: |
           aws cloudformation deploy \
