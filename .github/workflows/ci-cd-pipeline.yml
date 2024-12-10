@@ -1,4 +1,4 @@
-name: Deploy Infrastructure
+name: CI/CD Pipeline
 
 on:
   push:
@@ -7,9 +7,40 @@ on:
       - dev
 
 jobs:
-  deploy-s3:
+  source:
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
 
+  build:
+    runs-on: ubuntu-latest
+    needs: source
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Compile Application
+        run: npm run build
+
+      - name: Validate CloudFormation Template
+        run: aws cloudformation validate-template --template-body file://cloudformation/infrastructure.yaml
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Run Unit Tests
+        run: npm test
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -21,94 +52,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: 'us-east-1'
 
-      - name: Deploy S3 Bucket
+      - name: Deploy Infrastructure
         run: |
           aws cloudformation deploy \
-            --template-file cloudformation/s3-bucket.yaml \
-            --stack-name s3-bucket-stack \
-            --capabilities CAPABILITY_NAMED_IAM
+            --template-file cloudformation/infrastructure.yaml \
+            --stack-name my-infrastructure-stack \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --parameter-overrides LambdaS3Bucket=my-lambda-code-bucket
 
       - name: Sync S3 Bucket
-        env:
-          S3_BUCKET: leesa9019432-frontend-bucket-9121857
         run: |
-          aws s3 sync public/ s3://$S3_BUCKET/ --region us-east-1
-
-  deploy-iam-roles:
-    runs-on: ubuntu-latest
-    needs: deploy-s3
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Set up AWS CLI
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: 'us-east-1'
-
-      - name: Deploy IAM Roles
-        run: |
-          aws cloudformation deploy \
-            --template-file cloudformation/iam-roles.yaml \
-            --stack-name iam-roles-stack \
-            --capabilities CAPABILITY_NAMED_IAM
-
-  deploy-ec2:
-    runs-on: ubuntu-latest
-    needs: deploy-iam-roles
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Set up AWS CLI
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: 'us-east-1'
-
-      - name: Deploy EC2 Instance
-        run: |
-          aws cloudformation deploy \
-            --template-file cloudformation/ec2-instance.yaml \
-            --stack-name ec2-instance-stack \
-            --capabilities CAPABILITY_NAMED_IAM
-
-      - name: Get EC2 Public IP
-        id: get-ec2-ip
-        run: |
-          EC2_PUBLIC_IP=$(aws cloudformation describe-stacks \
-            --stack-name ec2-instance-stack \
-            --query "Stacks[0].Outputs[?OutputKey=='PublicIP'].OutputValue" \
-            --output text)
-          echo "EC2_PUBLIC_IP=$EC2_PUBLIC_IP" >> $GITHUB_ENV
-
-  deploy-api-gateway:
-    runs-on: ubuntu-latest
-    needs: deploy-ec2
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Set up AWS CLI
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: 'us-east-1'
-
-      - name: Deploy API Gateway
-        env:
-          EC2_PUBLIC_IP: ${{ env.EC2_PUBLIC_IP }}
-        run: |
-          aws cloudformation deploy \
-            --template-file cloudformation/api-gateway.yaml \
-            --stack-name api-gateway-stack \
-            --capabilities CAPABILITY_NAMED_IAM \
-            --parameter-overrides EC2InstancePublicIP=${{ env.EC2_PUBLIC_IP }} \
-            --region us-east-1
+          aws s3 sync public/ s3://leesa9019432-frontend-bucket-9121857 --region us-east-1
