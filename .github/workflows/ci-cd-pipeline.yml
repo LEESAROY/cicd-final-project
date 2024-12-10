@@ -35,7 +35,7 @@ jobs:
         run: |
           aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws configure set region ${{ secrets.AWS_REGION }}
+          aws configure set region us-east-1
       - name: Validate CloudFormation Templates
         run: |
           aws cloudformation validate-template --template-body file://cloudformation/s3.yaml
@@ -69,7 +69,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: us-east-1
       - name: Deploy S3 Bucket
         run: |
           aws cloudformation deploy \
@@ -93,10 +93,15 @@ jobs:
             --template-file cloudformation/lambda.yaml \
             --stack-name backend-lambda \
             --capabilities CAPABILITY_NAMED_IAM \
-            --parameter-overrides LambdaS3Bucket=my-lambda-code-bucket LambdaExecutionRoleArn=$(aws cloudformation describe-stacks --stack-name lambda-execution-role --query "Stacks[0].Outputs[?OutputKey=='LambdaExecutionRoleArn'].OutputValue" --output text)
+            --parameter-overrides LambdaS3Bucket=my-lambda-code-bucket LambdaExecutionRoleArn=$(aws cloudformation describe-stacks \
+            --stack-name lambda-execution-role \
+            --query "Stacks[0].Outputs[?OutputKey=='LambdaExecutionRoleArn'].OutputValue" \
+            --output text)
       - name: Deploy API Gateway
         run: |
           aws cloudformation deploy \
             --template-file cloudformation/api-gateway.yaml \
             --stack-name api-gateway \
-            --parameter-overrides MyLambdaFunctionArn=$(aws cloudformation describe-stacks --stack-name backend-lambda --query "Stacks[0].Outputs[?OutputKey=='MyLambdaFunctionArn'].OutputValue" --output text)
+            --parameter-overrides MyLambdaFunctionArn=$(aws cloudformation describe-stacks \
+            --stack-name backend-lambda \
+            --query "Stacks[0].Outputs[?OutputKey=='MyLambdaFunctionArn'].OutputValue" --output text)
