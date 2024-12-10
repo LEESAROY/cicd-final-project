@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
+        with: 
+          ref: ${{ github.ref }}
 
   build:
     runs-on: ubuntu-latest
