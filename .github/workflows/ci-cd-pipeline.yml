@@ -28,7 +28,7 @@ jobs:
         with:
           node-version: '14'
       - name: List Files for Debugging
-        run: ls -R
+        run: ls -R  # This will list the directory structure for debugging purposes
       - name: Install Dependencies
         run: npm install
       - name: Configure AWS CLI
@@ -74,12 +74,19 @@ jobs:
         run: |
           aws cloudformation deploy \
             --template-file cloudformation/s3.yaml \
-            --stack-name frontend-s3-bucket
+            --stack-name frontend-s3-bucket \
+            --capabilities CAPABILITY_IAM
+      - name: Sync S3 Bucket
+        env:
+          S3_BUCKET: leesa9019432-frontend-bucket-91220241050
+        run: |
+          aws s3 sync public/ s3://$S3_BUCKET/ --region us-east-1
       - name: Deploy IAM Role
         run: |
           aws cloudformation deploy \
             --template-file cloudformation/iam.yaml \
-            --stack-name lambda-execution-role
+            --stack-name lambda-execution-role \
+            --capabilities CAPABILITY_IAM
       - name: Deploy Lambda Function
         run: |
           aws cloudformation deploy \
@@ -93,6 +100,3 @@ jobs:
             --template-file cloudformation/api-gateway.yaml \
             --stack-name api-gateway \
             --parameter-overrides MyLambdaFunctionArn=$(aws cloudformation describe-stacks --stack-name backend-lambda --query "Stacks[0].Outputs[?OutputKey=='MyLambdaFunctionArn'].OutputValue" --output text)
-      - name: Sync S3 Bucket
-        run: |
-          aws s3 sync public/ s3://frontend-bucket-${{ secrets.AWS_ACCOUNT_ID }}-${{ secrets.AWS_REGION }} --region ${{ secrets.AWS_REGION }}
