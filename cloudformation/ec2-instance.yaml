@@ -3,9 +3,38 @@ Resources:
     Type: 'AWS::EC2::Instance'
     Properties:
       InstanceType: t2.micro
-      ImageId: ami-09e4ba81d75ebeb6a
+      ImageId: ami-09e4ba81d75ebeb6a  # Ensure this AMI ID is valid in your region
       SecurityGroupIds:
         - !Ref leesa9019432InstanceSecurityGroup
+      KeyName: my-key-pair  # Ensure you have a key pair named 'my-key-pair' in your AWS account
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          yum update -y
+          curl -sL https://rpm.nodesource.com/setup_14.x | bash -
+          yum install -y nodejs
+          mkdir -p /home/ec2-user/app
+          cd /home/ec2-user/app
+          echo "const express = require('express');
+          const app = express();
+          const PORT = process.env.PORT || 3000;
+
+          // Serve static files
+          app.use(express.static('public'));
+
+          // API endpoint
+          app.get('/api/data', (req, res) => {
+            res.json({ message: 'Hello from Final project' });
+          });
+
+          app.listen(PORT, () => {
+            console.log('Server is running on port ' + PORT);
+          });" > server.js
+          npm init -y
+          npm install express
+          mkdir public
+          echo "Hello, this is a static file" > public/index.html
+          node server.js > server.log 2>&1 &
 
   leesa9019432InstanceSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
