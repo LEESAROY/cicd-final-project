@@ -33,10 +33,6 @@ jobs:
         run: zip -r lambda.zip index.js node_modules
       - name: List Files for Debugging
         run: ls -R
-      - name: Upload lambda.zip to S3 
-        env: 
-          S3_BUCKET: leesa9019432-frontend-bucket-91220241050 
-        run: aws s3 cp lambda.zip s3://$S3_BUCKET/lambda.zip --region us-east-1
       - name: Configure AWS CLI
         run: |
           aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -82,16 +78,17 @@ jobs:
             --template-file cloudformation/s3.yaml \
             --stack-name frontend-s3-bucket \
             --capabilities CAPABILITY_IAM
+      - name: Upload lambda.zip to S3 
+        env: 
+          S3_BUCKET: leesa9019432-frontend-bucket-91220241050
+        run: |
+          aws s3 cp lambda.zip s3://$S3_BUCKET/lambda.zip --region us-east-1
       - name: Sync S3 Bucket
         env:
           S3_BUCKET: leesa9019432-frontend-bucket-91220241050
         run: |
           aws s3 sync public/ s3://$S3_BUCKET/ --region us-east-1
-      - name: Upload lambda.zip to S3 
-        env: 
-          S3_BUCKET: leesa9019432-frontend-bucket-91220241050
-        run: |
-          aws s3 cp /home/runner/work/$GITHUB_REPOSITORY/lambda.zip s3://$S3_BUCKET/lambda.zip --region us-east-1
+      
       - name: Deploy IAM Role
         run: |
           aws cloudformation deploy \
