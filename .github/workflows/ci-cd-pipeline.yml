@@ -21,13 +21,12 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '14'
-
+      - name: List Files for Debugging
+        run: ls -R 
       - name: Install Dependencies
         run: npm install
-
       - name: Compile Application
         run: npm run build
-
       - name: Validate CloudFormation Templates
         run: |
           aws cloudformation validate-template --template-body file://cloudformation/s3.yaml
@@ -48,26 +47,22 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
       - name: Set up AWS CLI
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: 'us-east-1'
-
       - name: Deploy S3 Bucket
         run: |
           aws cloudformation deploy \
             --template-file cloudformation/s3.yaml \
             --stack-name frontend-s3-bucket
-
       - name: Deploy IAM Role
         run: |
           aws cloudformation deploy \
             --template-file cloudformation/iam.yaml \
             --stack-name lambda-execution-role
-
       - name: Deploy Lambda Function
         run: |
           aws cloudformation deploy \
@@ -75,14 +70,12 @@ jobs:
             --stack-name backend-lambda \
             --capabilities CAPABILITY_NAMED_IAM \
             --parameter-overrides LambdaS3Bucket=my-lambda-code-bucket LambdaExecutionRoleArn=$(aws cloudformation describe-stacks --stack-name lambda-execution-role --query "Stacks[0].Outputs[?OutputKey=='LambdaExecutionRoleArn'].OutputValue" --output text)
-
       - name: Deploy API Gateway
         run: |
           aws cloudformation deploy \
             --template-file cloudformation/api-gateway.yaml \
             --stack-name api-gateway \
             --parameter-overrides MyLambdaFunctionArn=$(aws cloudformation describe-stacks --stack-name backend-lambda --query "Stacks[0].Outputs[?OutputKey=='MyLambdaFunctionArn'].OutputValue" --output text)
-
       - name: Sync S3 Bucket
         run: |
           aws s3 sync public/ s3://frontend-bucket-${{ secrets.AWS_ACCOUNT_ID }}-${{ secrets.AWS_REGION }} --region ${{ secrets.AWS_REGION }}
