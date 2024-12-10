@@ -93,7 +93,7 @@ jobs:
             --template-file cloudformation/lambda.yaml \
             --stack-name backend-lambda \
             --capabilities CAPABILITY_NAMED_IAM \
-            --parameter-overrides LambdaS3Bucket=my-lambda-code-bucket LambdaExecutionRoleArn=$(aws cloudformation describe-stacks \
+            --parameter-overrides LambdaS3Bucket=leesa9019432-frontend-bucket-91220241050 LambdaExecutionRoleArn=$(aws cloudformation describe-stacks \
             --stack-name lambda-execution-role \
             --query "Stacks[0].Outputs[?OutputKey=='LambdaExecutionRoleArn'].OutputValue" \
             --output text)
