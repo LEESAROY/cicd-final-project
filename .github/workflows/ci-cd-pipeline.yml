@@ -22,9 +22,6 @@ jobs:
         with:
           node-version: '14'
 
-      - name: Change to src directory
-        run: cd src
-
       - name: Install Dependencies
         working-directory: ./src
         run: npm install
@@ -40,9 +37,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Change to src directory
-        run: cd tests
-
       - name: Run Unit Tests
         working-directory: ./tests
         run: npm test
