@@ -27,7 +27,7 @@ Resources:
             res.json({ message: 'Hello from Final project' });
           });
 
-          app.listen(PORT, () => {
+          app.listen(PORT, '0.0.0.0', () => {
             console.log('Server is running on port ' + PORT);
           });" > server.js
           npm init -y
