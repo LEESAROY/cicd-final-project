@@ -1,4 +1,6 @@
 exports.handler = async (event) => {
+    console.log('Event:', JSON.stringify(event, null, 2));
+
     if (event.path === '/prod/api' && event.httpMethod === 'GET') {
         const response = {
             statusCode: 200,
