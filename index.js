@@ -1,5 +1,5 @@
 exports.handler = async (event) => {
-    if (event.path === '/api/data' && event.httpMethod === 'GET') {
+    if (event.path === '/prod/api' && event.httpMethod === 'GET') {
         const response = {
             statusCode: 200,
             body: JSON.stringify({ message: "Hello from Final project" }),
