@@ -82,12 +82,12 @@ jobs:
         run: zip -r lambda.zip index.js node_modules
       - name: Upload lambda.zip to S3 
         env: 
-          S3_BUCKET: leesa9019432-frontend-bucket-10122024101
+          S3_BUCKET: leesa9019432-frontend-bucket-111220241258
         run: |
           aws s3 cp lambda.zip s3://$S3_BUCKET/lambda.zip --region us-east-1
       - name: Sync S3 Bucket
         env:
-          S3_BUCKET: leesa9019432-frontend-bucket-10122024101
+          S3_BUCKET: leesa9019432-frontend-bucket-111220241258
         run: |
           aws s3 sync public/ s3://$S3_BUCKET/ --region us-east-1
       
@@ -103,7 +103,7 @@ jobs:
             --template-file cloudformation/lambda.yaml \
             --stack-name backend-lambda \
             --capabilities CAPABILITY_NAMED_IAM \
-            --parameter-overrides LambdaS3Bucket=leesa9019432-frontend-bucket-10122024101 LambdaExecutionRoleArn=$(aws cloudformation describe-stacks \
+            --parameter-overrides LambdaS3Bucket=leesa9019432-frontend-bucket-111220241258 LambdaExecutionRoleArn=$(aws cloudformation describe-stacks \
             --stack-name lambda-execution-role \
             --query "Stacks[0].Outputs[?OutputKey=='LambdaExecutionRoleArn'].OutputValue" \
             --output text)
