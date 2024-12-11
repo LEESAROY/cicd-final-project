@@ -1,8 +1,8 @@
 const { handler } = require('../../index');
 
-test('Returns message from /api/data endpoint', async () => {
+test('Returns message from /prod/api endpoint', async () => {
     const event = {
-        path: '/api/data',
+        path: '/prod/api',
         httpMethod: 'GET'
     };
     const result = await handler(event);
