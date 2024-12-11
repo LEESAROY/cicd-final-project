@@ -49,6 +49,7 @@ Resources:
       RestApiId: !Ref ApiGateway
       StageName: prod
       Description: "Deployment for the prod stage"
+    DependsOn: ApiMethod
 
 Outputs:
   ApiEndpoint:
