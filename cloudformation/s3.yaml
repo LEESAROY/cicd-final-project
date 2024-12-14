@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: S3 buckets for hosting frontend and backend
+Description: S3 buckets for hosting frontend and backend with CloudWatch Logs
 
 Resources:
   FrontendBucket:
@@ -27,7 +27,7 @@ Resources:
             Action: 's3:GetObject'
             Resource: !Sub 'arn:aws:s3:::leesa9019432-frontend-bucket-111220241258/*'
 
-  LambdaBukcet:
+  LambdaBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
       BucketName: leesa9019432-lambda-bucket-111220241258
@@ -40,7 +40,7 @@ Resources:
   LambdaBucketPolicy:
     Type: 'AWS::S3::BucketPolicy'
     Properties:
-      Bucket: !Ref LambdaBukcet
+      Bucket: !Ref LambdaBucket
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -50,11 +50,31 @@ Resources:
             Action: 's3:GetObject'
             Resource: !Sub 'arn:aws:s3:::leesa9019432-lambda-bucket-111220241258/*'
 
+  FrontendBucketLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: '/frontendbucket/logs'
+      RetentionInDays: 7
+
+  LambdaBucketLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: '/lambdabucket/logs'
+      RetentionInDays: 7
+
 Outputs:
   FrontendWebsiteURL:
     Value: !GetAtt FrontendBucket.WebsiteURL
     Description: URL for the frontend website hosted on S3
 
-  BackendBucketName:
-    Value: !Ref LambdaBukcet
+  LambdaBucketName:
+    Value: !Ref LambdaBucket
     Description: Name of the backend S3 bucket
+
+  FrontendLogGroup:
+    Value: !Ref FrontendLogGroup
+    Description: Log group for frontend logs
+
+  BackendLogGroup:
+    Value: !Ref BackendLogGroup
+    Description: Log group for backend logs

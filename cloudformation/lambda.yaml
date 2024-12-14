@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Lambda function for backend services
+Description: Lambda function for backend services with CloudWatch Logs
 
 Parameters:
   LambdaS3Bucket:
@@ -22,7 +22,17 @@ Resources:
       MemorySize: 128
       Timeout: 5
 
+  LambdaLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${MyLambdaFunction}"
+      RetentionInDays: 14
+
 Outputs:
   MyLambdaFunctionArn:
     Value: !GetAtt MyLambdaFunction.Arn
     Description: ARN of the Lambda function
+
+  LambdaLogGroupName:
+    Value: !Ref LambdaLogGroup
+    Description: Name of the CloudWatch Log Group for the Lambda function

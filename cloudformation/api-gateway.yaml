@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: API Gateway to trigger Lambda function
+Description: API Gateway to trigger Lambda function with CloudWatch Logs
 
 Parameters:
   MyLambdaFunctionArn:
@@ -55,9 +55,24 @@ Resources:
       RestApiId: !Ref ApiGateway
       StageName: prod
       Description: "Deployment for the prod stage"
+      MethodSettings:
+        - DataTraceEnabled: true
+          HttpMethod: '*'
+          LoggingLevel: INFO
+          ResourcePath: '/*'
     DependsOn: ApiMethod
+
+  ApiGatewayLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: !Sub "/aws/apigateway/${ApiGateway}"
+      RetentionInDays: 14
 
 Outputs:
   ApiEndpoint:
     Value: !Sub 'https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/api'
     Description: URL of the API Gateway endpoint
+
+  ApiGatewayLogGroupName:
+    Value: !Ref ApiGatewayLogGroup
+    Description: Name of the CloudWatch Log Group for the API Gateway
