@@ -97,6 +97,11 @@ jobs:
             --template-file cloudformation/iam.yaml \
             --stack-name lambda-execution-role \
             --capabilities CAPABILITY_IAM
+      - name: Set CloudWatch Logs Role ARN for API Gateway
+        run: |
+          aws apigateway update-account \
+            --patch-operations op=replace,path=/cloudwatchRoleArn,value=$(aws cloudformation describe-stacks --stack-name lambda-execution-role \
+            --query "Stacks[0].Outputs[?OutputKey=='ApiGatewayCloudWatchLogsRoleArn'].OutputValue" --output text)
       - name: Deploy Lambda Function
         run: |
           aws cloudformation deploy \
@@ -115,8 +120,3 @@ jobs:
             --parameter-overrides MyLambdaFunctionArn=$(aws cloudformation describe-stacks \
             --stack-name backend-lambda --query "Stacks[0].Outputs[?OutputKey=='MyLambdaFunctionArn'].OutputValue" \
             --output text)
-      - name: Set CloudWatch Logs Role ARN for API Gateway
-        run: |
-          aws apigateway update-account \
-            --patch-operations op=replace,path=/cloudwatchRoleArn,value=$(aws cloudformation describe-stacks --stack-name lambda-execution-role \
-            --query "Stacks[0].Outputs[?OutputKey=='ApiGatewayCloudWatchLogsRoleArn'].OutputValue" --output text)
