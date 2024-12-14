@@ -35,7 +35,7 @@ jobs:
         run: |
           aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws configure set region us-east-1  # Updated region
+          aws configure set region us-east-1
       - name: Validate CloudFormation Templates
         run: |
           aws cloudformation validate-template --template-body file://cloudformation/s3.yaml
@@ -115,3 +115,8 @@ jobs:
             --parameter-overrides MyLambdaFunctionArn=$(aws cloudformation describe-stacks \
             --stack-name backend-lambda --query "Stacks[0].Outputs[?OutputKey=='MyLambdaFunctionArn'].OutputValue" \
             --output text)
+      - name: Set CloudWatch Logs Role ARN for API Gateway
+        run: |
+          aws apigateway update-account \
+            --patch-operations op=replace,path=/cloudwatchRoleArn,value=$(aws cloudformation describe-stacks --stack-name lambda-execution-role \
+            --query "Stacks[0].Outputs[?OutputKey=='ApiGatewayCloudWatchLogsRoleArn'].OutputValue" --output text)
