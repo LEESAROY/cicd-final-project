@@ -53,14 +53,21 @@ Resources:
     Type: 'AWS::ApiGateway::Deployment'
     Properties:
       RestApiId: !Ref ApiGateway
-      StageName: prod
       Description: "Deployment for the prod stage"
+    DependsOn: ApiMethod
+
+  ApiStage:
+    Type: 'AWS::ApiGateway::Stage'
+    Properties:
+      StageName: prod
+      RestApiId: !Ref ApiGateway
+      DeploymentId: !Ref ApiDeployment
       MethodSettings:
         - DataTraceEnabled: true
           HttpMethod: '*'
           LoggingLevel: INFO
           ResourcePath: '/*'
-    DependsOn: ApiMethod
+      Description: "Prod stage with logging enabled"
 
   ApiGatewayLogGroup:
     Type: 'AWS::Logs::LogGroup'
