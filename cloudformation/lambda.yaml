@@ -1,0 +1,38 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Lambda function for backend services with CloudWatch Logs
+
+Parameters:
+  LambdaS3Bucket:
+    Type: String
+    Description: S3 bucket where Lambda code is stored
+  LambdaExecutionRoleArn:
+    Type: String
+    Description: ARN of the Lambda execution role
+
+Resources:
+  MyLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Handler: index.handler
+      Role: !Ref LambdaExecutionRoleArn
+      Code:
+        S3Bucket: !Ref LambdaS3Bucket
+        S3Key: lambda.zip
+      Runtime: nodejs20.x
+      MemorySize: 128
+      Timeout: 5
+
+  LambdaLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/lambda/logs"
+      RetentionInDays: 14
+
+Outputs:
+  MyLambdaFunctionArn:
+    Value: !GetAtt MyLambdaFunction.Arn
+    Description: ARN of the Lambda function
+
+  LambdaLogGroupName:
+    Value: !Ref LambdaLogGroup
+    Description: Name of the CloudWatch Log Group for the Lambda function

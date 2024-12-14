@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: S3 buckets for hosting frontend and backend with CloudWatch Logs
+
+Resources:
+  FrontendBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: leesa9019432-frontend-bucket-111220241258
+      WebsiteConfiguration:
+        IndexDocument: index.html
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+
+  FrontendBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref FrontendBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Sub 'arn:aws:s3:::leesa9019432-frontend-bucket-111220241258/*'
+
+  LambdaBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: leesa9019432-lambda-bucket-111220241258
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+
+  LambdaBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref LambdaBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Sub 'arn:aws:s3:::leesa9019432-lambda-bucket-111220241258/*'
+
+  FrontendBucketLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: '/frontendbucket/logs'
+      RetentionInDays: 7
+
+  LambdaBucketLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: '/lambdabucket/logs'
+      RetentionInDays: 7
+
+Outputs:
+  FrontendWebsiteURL:
+    Value: !GetAtt FrontendBucket.WebsiteURL
+    Description: URL for the frontend website hosted on S3
+
+  LambdaBucketName:
+    Value: !Ref LambdaBucket
+    Description: Name of the backend S3 bucket
+
+  FrontendLogGroup:
+    Value: !Ref FrontendBucketLogGroup
+    Description: Log group for frontend logs
+
+  BackendLogGroup:
+    Value: !Ref LambdaBucketLogGroup
+    Description: Log group for backend logs

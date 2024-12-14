@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: API Gateway to trigger Lambda function with CloudWatch Logs
+
+Parameters:
+  MyLambdaFunctionArn:
+    Type: String
+    Description: ARN of the Lambda function
+
+Resources:
+  ApiGateway:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: ApiGateway
+
+  ApiResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt 
+        - ApiGateway
+        - RootResourceId
+      PathPart: 'api'
+      RestApiId: !Ref ApiGateway
+
+  ApiMethod:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: GET
+      ResourceId: !Ref ApiResource
+      RestApiId: !Ref ApiGateway
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub 
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyLambdaFunctionArn}/invocations
+          - MyLambdaFunctionArn: !Ref MyLambdaFunctionArn
+      MethodResponses: 
+        - StatusCode: 200 
+          ResponseParameters: 
+            method.response.header.Access-Control-Allow-Origin: true 
+            method.response.header.Access-Control-Allow-Methods: true 
+            method.response.header.Access-Control-Allow-Headers: true
+
+  LambdaApiGatewayPermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MyLambdaFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*/api'
+
+  ApiDeployment:
+    Type: 'AWS::ApiGateway::Deployment'
+    Properties:
+      RestApiId: !Ref ApiGateway
+      Description: "Deployment for the prod stage"
+    DependsOn: ApiMethod
+
+  ApiStage:
+    Type: 'AWS::ApiGateway::Stage'
+    Properties:
+      StageName: prod
+      RestApiId: !Ref ApiGateway
+      DeploymentId: !Ref ApiDeployment
+      MethodSettings:
+        - DataTraceEnabled: true
+          HttpMethod: '*'
+          LoggingLevel: INFO
+          ResourcePath: '/*'
+      Description: "Prod stage with logging enabled"
+
+  ApiGatewayLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: !Sub "/aws/apigateway/apigateway/logs"
+      RetentionInDays: 14
+
+Outputs:
+  ApiEndpoint:
+    Value: !Sub 'https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/api'
+    Description: URL of the API Gateway endpoint
+
+  ApiGatewayLogGroupName:
+    Value: !Ref ApiGatewayLogGroup
+    Description: Name of the CloudWatch Log Group for the API Gateway
