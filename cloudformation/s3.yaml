@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: S3 bucket for hosting the frontend
+Description: S3 buckets for hosting frontend and backend
 
 Resources:
   FrontendBucket:
@@ -14,7 +14,7 @@ Resources:
         IgnorePublicAcls: false
         RestrictPublicBuckets: false
 
-  BucketPolicy:
+  FrontendBucketPolicy:
     Type: 'AWS::S3::BucketPolicy'
     Properties:
       Bucket: !Ref FrontendBucket
@@ -27,7 +27,34 @@ Resources:
             Action: 's3:GetObject'
             Resource: !Sub 'arn:aws:s3:::leesa9019432-frontend-bucket-111220241258/*'
 
+  LambdaBukcet:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: leesa9019432-lambda-bucket-111220241258
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+
+  LambdaBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref LambdaBukcet
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Sub 'arn:aws:s3:::leesa9019432-lambda-bucket-111220241258/*'
+
 Outputs:
-  WebsiteURL:
+  FrontendWebsiteURL:
     Value: !GetAtt FrontendBucket.WebsiteURL
-    Description: URL for the website hosted on S3
+    Description: URL for the frontend website hosted on S3
+
+  BackendBucketName:
+    Value: !Ref LambdaBukcet
+    Description: Name of the backend S3 bucket
