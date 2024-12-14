@@ -1,6 +1,6 @@
 document.getElementById('fetchDataBtn').addEventListener('click', async () => {
   try {
-      const response = await fetch('https://8uqo73uflg.execute-api.us-east-1.amazonaws.com/prod/api');
+      const response = await fetch('https://i79xl11b2f.execute-api.us-east-1.amazonaws.com/prod/api');
       if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
       }
