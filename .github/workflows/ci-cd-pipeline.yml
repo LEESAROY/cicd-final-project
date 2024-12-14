@@ -80,15 +80,14 @@ jobs:
         run: npm install
       - name: Create lambda.zip
         run: zip -r lambda.zip index.js node_modules
-      - name: Upload lambda.zip to S3 
-        env: 
-          S3_BUCKET_FrontEnd: leesa9019432-frontend-bucket-111220241258
+      - name: Upload lambda.zip to S3
+        env:
           S3_BUCKET_Lambda: leesa9019432-lambda-bucket-111220241258
         run: |
           aws s3 cp lambda.zip s3://$S3_BUCKET_Lambda/lambda.zip --region us-east-1
       - name: Sync S3 Bucket
         env:
-          S3_BUCKET: leesa9019432-frontend-bucket-111220241258
+          S3_BUCKET_FrontEnd: leesa9019432-frontend-bucket-111220241258
         run: |
           aws s3 sync public/ s3://$S3_BUCKET_FrontEnd/ --region us-east-1
       
