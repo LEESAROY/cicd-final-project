@@ -72,9 +72,9 @@ Outputs:
     Description: Name of the backend S3 bucket
 
   FrontendLogGroup:
-    Value: !Ref FrontendLogGroup
+    Value: !Ref FrontendBucketLogGroup
     Description: Log group for frontend logs
 
   BackendLogGroup:
-    Value: !Ref BackendLogGroup
+    Value: !Ref LambdaBucketLogGroup
     Description: Log group for backend logs
