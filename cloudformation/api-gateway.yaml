@@ -65,7 +65,7 @@ Resources:
   ApiGatewayLogGroup:
     Type: 'AWS::Logs::LogGroup'
     Properties:
-      LogGroupName: !Sub "/aws/apigateway/${ApiGateway}"
+      LogGroupName: !Sub "/aws/apigateway/apigateway/logs"
       RetentionInDays: 14
 
 Outputs:
